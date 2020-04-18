@@ -58,12 +58,7 @@
       scanFiles: function (item) {
         switch (true) {
           case (item.isDirectory):
-            let directoryReader = item.createReader();
-            directoryReader.readEntries(
-              (entries) => entries.forEach(
-                (entry) => this.scanFiles(entry)
-              )
-            )
+            this.readEntries(item)
             break
           case (item.isFile):
             item.file((file) => {
@@ -77,6 +72,23 @@
             })
             break
         }
+      },
+      readEntries: function (item) {
+        let directoryReader = item.createReader();
+        let entriesArray = []
+        this.read(directoryReader, entriesArray)
+      },
+      read: function (directoryReader, entriesArray) {
+        directoryReader.readEntries((entries) => {
+          if (!entries.length) {
+            entriesArray.forEach(
+              (entry) => this.scanFiles(entry)
+            )
+          } else {
+            entriesArray = entriesArray.concat(entries)
+            this.read(directoryReader, entriesArray)
+          }
+        })
       }
     },
     computed: {
